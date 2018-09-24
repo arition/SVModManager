@@ -37,7 +37,8 @@ namespace SVModManager
             var svLocation =
                 Environment.ExpandEnvironmentVariables(@"%USERPROFILE%\AppData\LocalLow\Cygames\Shadowverse");
 
-            var perModPercent = 1d / ViewModel.ModInfoList.Count;
+            var modInfoList = ViewModel.ModInfoList.Where(t => t.IsEnabled).ToList();
+            var perModPercent = 1d / modInfoList.Count;
             double progressValue;
 
             var progress = await this.ShowProgressAsync("Processing", "Indexing files...");
@@ -47,7 +48,7 @@ namespace SVModManager
 
             await Task.Run(() =>
             {
-                Parallel.ForEach(ViewModel.ModInfoList, modInfo =>
+                Parallel.ForEach(modInfoList, modInfo =>
                 {
                     modInfo.FileList.Clear();
                     foreach (var file in Directory.EnumerateFiles(Path.Combine(ViewModel.ModFolderPath, modInfo.Name),
@@ -82,7 +83,7 @@ namespace SVModManager
 
             await Task.Run(() =>
             {
-                foreach (var modInfo in ViewModel.ModInfoList)
+                foreach (var modInfo in modInfoList)
                 {
                     foreach (var file in modInfo.FileList)
                     {
@@ -114,7 +115,7 @@ namespace SVModManager
 
             await Task.Run(() =>
             {
-                foreach (var modInfo in ViewModel.ModInfoList.Reverse())
+                foreach (var modInfo in modInfoList.AsEnumerable().Reverse())
                 {
                     foreach (var file in modInfo.FileList)
                         switch (file.Extension)
