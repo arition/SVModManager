@@ -55,11 +55,12 @@ namespace SVModManager
                         "*", SearchOption.AllDirectories))
                     {
                         var fileInfo = new FileInfo(file);
-                        if (file.EndsWith(".unity3d") || file.EndsWith(".acb")) modInfo.FileList.Add(fileInfo);
-
-                        if (!conflictBin.TryAdd(fileInfo.Name, modInfo.Name))
-                            conflictLog.Log(LogLevel.Warn,
-                                $"Find conflict for file {fileInfo.Name} in mod {modInfo.Name}");
+                        if (file.EndsWith(".unity3d") || file.EndsWith(".acb"))
+                        {
+                            modInfo.FileList.Add(fileInfo);
+                            if (!conflictBin.TryAdd(fileInfo.Name, modInfo.Name))
+                                conflictLog.Log(LogLevel.Warn, $"Find conflict for file {fileInfo.Name} in mod {modInfo.Name}");
+                        }
                     }
                 });
             });
@@ -92,12 +93,28 @@ namespace SVModManager
                         switch (file.Extension)
                         {
                             case ".unity3d":
-                                File.Copy(Path.Combine(svLocation, "a", file.Name),
-                                    Path.Combine(Config.BackupFolder.FullName, file.Name));
+                                if (File.Exists(Path.Combine(svLocation, "a", file.Name)))
+                                {
+                                    File.Copy(Path.Combine(svLocation, "a", file.Name),
+                                        Path.Combine(Config.BackupFolder.FullName, file.Name));
+                                }
+                                else
+                                {
+                                    Logger.Warn(
+                                        $"Mod {modInfo.Name} contains file {file.Name} that does not exist in the official version of Shadowverse. Cannot backup that file. Have you already entered Shadowverse at least once?");
+                                }
                                 break;
                             case ".acb":
-                                File.Copy(Path.Combine(svLocation, "v", file.Name),
-                                    Path.Combine(Config.BackupFolder.FullName, file.Name));
+                                if (File.Exists(Path.Combine(svLocation, "v", file.Name)))
+                                {
+                                    File.Copy(Path.Combine(svLocation, "v", file.Name),
+                                        Path.Combine(Config.BackupFolder.FullName, file.Name));
+                                }
+                                else
+                                {
+                                    Logger.Warn(
+                                        $"Mod {modInfo.Name} contains file {file.Name} that does not exist in the official version of Shadowverse. Cannot backup that file. Have you already entered Shadowverse at least once?");
+                                }
                                 break;
                             default:
                                 throw new Exception("Unsupported extension");
